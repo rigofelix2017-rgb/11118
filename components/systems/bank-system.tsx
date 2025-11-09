@@ -1,11 +1,18 @@
 // Bank/Vault System Component
-// Secure storage, shared vault, item loans, withdrawal limits
+// Secure storage, shared vault, item loans, withdraw; haptic(HapticPattern.LIGHT)al limits
 
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { useMobileHUD } from '@/lib/mobile-hud-context';
+import { 
+  MobileOptimizedWrapper, 
+  MobileButton, 
+  MobileInput 
+} from '@/components/mobile/MobileOptimizedComponents';
+import { useHaptic, usePullToRefresh } from '@/lib/mobile-optimization-hooks';
+import { HapticPattern } from '@/lib/mobile-optimization';
 
 interface VaultItem {
   id: string;
@@ -15,12 +22,12 @@ interface VaultItem {
   quantity: number;
   rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
   value: number;
-  depositedAt: Date;
+  deposit; haptic(HapticPattern.LIGHT)edAt: Date;
 }
 
 interface Transaction {
   id: string;
-  type: 'deposit' | 'withdraw' | 'transfer' | 'loan' | 'interest';
+  type: 'deposit; haptic(HapticPattern.LIGHT)' | 'withdraw; haptic(HapticPattern.LIGHT)' | 'transfer' | 'loan' | 'interest';
   itemName?: string;
   amount: number;
   timestamp: Date;
@@ -34,8 +41,8 @@ export function BankSystem() {
   const [voidBalance, setVoidBalance] = useState(0);
   const [stakedVoid, setStakedVoid] = useState(0);
   const [interestRate, setInterestRate] = useState(5); // 5% APY
-  const [withdrawalLimit, setWithdrawalLimit] = useState(10000);
-  const [withdrawnToday, setWithdrawnToday] = useState(0);
+  const [withdraw; haptic(HapticPattern.LIGHT)alLimit, setWithdraw; haptic(HapticPattern.LIGHT)alLimit] = useState(10000);
+  const [withdraw; haptic(HapticPattern.LIGHT)nToday, setWithdraw; haptic(HapticPattern.LIGHT)nToday] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -58,8 +65,8 @@ export function BankSystem() {
         setVoidBalance(data.balance);
         setStakedVoid(data.staked);
         setInterestRate(data.interestRate);
-        setWithdrawalLimit(data.dailyLimit);
-        setWithdrawnToday(data.withdrawnToday);
+        setWithdraw; haptic(HapticPattern.LIGHT)alLimit(data.dailyLimit);
+        setWithdraw; haptic(HapticPattern.LIGHT)nToday(data.withdraw; haptic(HapticPattern.LIGHT)nToday);
       }
       
       if (selectedTab === 'history') {
@@ -74,8 +81,7 @@ export function BankSystem() {
     }
   };
 
-  return (
-    <div className="space-y-4">
+  return (`n    <MobileOptimizedWrapper title="Bank" showHeader={true}>`n      <div className="space-y-4">
       {/* Header Tabs */}
       <div className="overflow-x-auto -mx-4 px-4">
         <div className="flex gap-2 min-w-max">
@@ -139,8 +145,8 @@ export function BankSystem() {
               balance={voidBalance}
               staked={stakedVoid}
               interestRate={interestRate}
-              dailyLimit={withdrawalLimit}
-              withdrawnToday={withdrawnToday}
+              dailyLimit={withdraw; haptic(HapticPattern.LIGHT)alLimit}
+              withdraw; haptic(HapticPattern.LIGHT)nToday={withdraw; haptic(HapticPattern.LIGHT)nToday}
               onUpdate={fetchBankData}
             />
           )}
@@ -153,12 +159,14 @@ export function BankSystem() {
 }
 
 function VaultView({ items, shared = false, onUpdate }: { items: VaultItem[]; shared?: boolean; onUpdate: () => void }) {
-  const [showDeposit, setShowDeposit] = useState(false);
+  const [showDeposit; haptic(HapticPattern.LIGHT), setShowDeposit; haptic(HapticPattern.LIGHT)] = useState(false);
   const { pushNotification } = useMobileHUD();
+  const haptic = useHaptic();
+  const { ref: pullRef } = usePullToRefresh(fetchBankData);
 
-  const handleWithdraw = async (itemId: string) => {
+  const handleWithdraw; haptic(HapticPattern.LIGHT) = async (itemId: string) => {
     try {
-      const response = await fetch('/api/bank/withdraw', {
+      const response = await fetch('/api/bank/withdraw; haptic(HapticPattern.LIGHT)', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ itemId, shared }),
@@ -167,21 +175,20 @@ function VaultView({ items, shared = false, onUpdate }: { items: VaultItem[]; sh
       if (response.ok) {
         pushNotification({
           type: 'success',
-          title: 'Withdrawal Successful',
+          title: 'Withdraw; haptic(HapticPattern.LIGHT)al Successful',
           message: 'Item moved to inventory',
           duration: 3000,
         });
         onUpdate();
       }
     } catch (error) {
-      console.error('Failed to withdraw item:', error);
+      console.error('Failed to withdraw; haptic(HapticPattern.LIGHT) item:', error);
     }
   };
 
   const totalValue = items.reduce((sum, item) => sum + (item.value * item.quantity), 0);
 
-  return (
-    <div className="space-y-4">
+  return (`n    <MobileOptimizedWrapper title="Bank" showHeader={true}>`n      <div className="space-y-4">
       {/* Stats */}
       <div className="p-4 bg-muted rounded-lg border border-border">
         <div className="flex items-center justify-between">
@@ -192,10 +199,10 @@ function VaultView({ items, shared = false, onUpdate }: { items: VaultItem[]; sh
             </p>
           </div>
           <button
-            onClick={() => setShowDeposit(true)}
+            onClick={() => setShowDeposit; haptic(HapticPattern.LIGHT)(true)}
             className="px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-xs font-medium hover:bg-primary/90"
           >
-            Deposit
+            Deposit; haptic(HapticPattern.LIGHT)
           </button>
         </div>
       </div>
@@ -206,11 +213,11 @@ function VaultView({ items, shared = false, onUpdate }: { items: VaultItem[]; sh
           <div className="text-center py-12 text-muted-foreground">
             <p className="text-4xl mb-2">🏦</p>
             <p>Vault is empty</p>
-            <p className="text-sm mt-1">Deposit items to keep them safe!</p>
+            <p className="text-sm mt-1">Deposit; haptic(HapticPattern.LIGHT) items to keep them safe!</p>
           </div>
         ) : (
           items.map((item) => (
-            <VaultItemCard key={item.id} item={item} onWithdraw={() => handleWithdraw(item.id)} />
+            <VaultItemCard key={item.id} item={item} onWithdraw; haptic(HapticPattern.LIGHT)={() => handleWithdraw; haptic(HapticPattern.LIGHT)(item.id)} />
           ))
         )}
       </div>
@@ -218,7 +225,7 @@ function VaultView({ items, shared = false, onUpdate }: { items: VaultItem[]; sh
   );
 }
 
-function VaultItemCard({ item, onWithdraw }: { item: VaultItem; onWithdraw: () => void }) {
+function VaultItemCard({ item, onWithdraw; haptic(HapticPattern.LIGHT) }: { item: VaultItem; onWithdraw; haptic(HapticPattern.LIGHT): () => void }) {
   const rarityColors = {
     common: 'border-gray-500/30',
     uncommon: 'border-green-500/30',
@@ -227,7 +234,7 @@ function VaultItemCard({ item, onWithdraw }: { item: VaultItem; onWithdraw: () =
     legendary: 'border-orange-500/30',
   };
 
-  const daysSinceDeposit = Math.floor((new Date().getTime() - new Date(item.depositedAt).getTime()) / (1000 * 60 * 60 * 24));
+  const daysSinceDeposit; haptic(HapticPattern.LIGHT) = Math.floor((new Date().getTime() - new Date(item.deposit; haptic(HapticPattern.LIGHT)edAt).getTime()) / (1000 * 60 * 60 * 24));
 
   return (
     <div className={cn("p-3 rounded-lg border-2", rarityColors[item.rarity], "bg-muted")}>
@@ -239,14 +246,14 @@ function VaultItemCard({ item, onWithdraw }: { item: VaultItem; onWithdraw: () =
             x{item.quantity} • {item.value.toLocaleString()} 💰 each
           </p>
           <p className="text-xs text-muted-foreground">
-            Stored {daysSinceDeposit}d ago
+            Stored {daysSinceDeposit; haptic(HapticPattern.LIGHT)}d ago
           </p>
         </div>
         <button
-          onClick={onWithdraw}
+          onClick={onWithdraw; haptic(HapticPattern.LIGHT)}
           className="px-3 py-1.5 bg-primary/10 text-primary rounded-lg text-xs font-medium hover:bg-primary/20"
         >
-          Withdraw
+          Withdraw; haptic(HapticPattern.LIGHT)
         </button>
       </div>
     </div>
@@ -258,71 +265,72 @@ function CurrencyView({
   staked,
   interestRate,
   dailyLimit,
-  withdrawnToday,
+  withdraw; haptic(HapticPattern.LIGHT)nToday,
   onUpdate,
 }: {
   balance: number;
   staked: number;
   interestRate: number;
   dailyLimit: number;
-  withdrawnToday: number;
+  withdraw; haptic(HapticPattern.LIGHT)nToday: number;
   onUpdate: () => void;
 }) {
-  const [depositAmount, setDepositAmount] = useState(0);
-  const [withdrawAmount, setWithdrawAmount] = useState(0);
+  const [deposit; haptic(HapticPattern.LIGHT)Amount, setDeposit; haptic(HapticPattern.LIGHT)Amount] = useState(0);
+  const [withdraw; haptic(HapticPattern.LIGHT)Amount, setWithdraw; haptic(HapticPattern.LIGHT)Amount] = useState(0);
   const { pushNotification } = useMobileHUD();
+  const haptic = useHaptic();
+  const { ref: pullRef } = usePullToRefresh(fetchBankData);
 
   const dailyInterest = (staked * (interestRate / 100)) / 365;
-  const remainingLimit = dailyLimit - withdrawnToday;
+  const remainingLimit = dailyLimit - withdraw; haptic(HapticPattern.LIGHT)nToday;
 
-  const handleDeposit = async () => {
+  const handleDeposit; haptic(HapticPattern.LIGHT) = async () => {
     try {
-      const response = await fetch('/api/bank/deposit-void', {
+      const response = await fetch('/api/bank/deposit; haptic(HapticPattern.LIGHT)-void', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: depositAmount }),
+        body: JSON.stringify({ amount: deposit; haptic(HapticPattern.LIGHT)Amount }),
       });
 
       if (response.ok) {
         pushNotification({
           type: 'success',
-          title: 'Deposit Successful',
-          message: `Staked ${depositAmount} VOID`,
+          title: 'Deposit; haptic(HapticPattern.LIGHT) Successful',
+          message: `Staked ${deposit; haptic(HapticPattern.LIGHT)Amount} VOID`,
           duration: 3000,
         });
-        setDepositAmount(0);
+        setDeposit; haptic(HapticPattern.LIGHT)Amount(0);
         onUpdate();
       }
     } catch (error) {
-      console.error('Failed to deposit:', error);
+      console.error('Failed to deposit; haptic(HapticPattern.LIGHT):', error);
     }
   };
 
-  const handleWithdraw = async () => {
+  const handleWithdraw; haptic(HapticPattern.LIGHT) = async () => {
     try {
-      const response = await fetch('/api/bank/withdraw-void', {
+      const response = await fetch('/api/bank/withdraw; haptic(HapticPattern.LIGHT)-void', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: withdrawAmount }),
+        body: JSON.stringify({ amount: withdraw; haptic(HapticPattern.LIGHT)Amount }),
       });
 
       if (response.ok) {
         pushNotification({
           type: 'success',
-          title: 'Withdrawal Successful',
-          message: `Withdrew ${withdrawAmount} VOID`,
+          title: 'Withdraw; haptic(HapticPattern.LIGHT)al Successful',
+          message: `Withdrew ${withdraw; haptic(HapticPattern.LIGHT)Amount} VOID`,
           duration: 3000,
         });
-        setWithdrawAmount(0);
+        setWithdraw; haptic(HapticPattern.LIGHT)Amount(0);
         onUpdate();
       }
     } catch (error) {
-      console.error('Failed to withdraw:', error);
+      console.error('Failed to withdraw; haptic(HapticPattern.LIGHT):', error);
     }
   };
 
-  return (
-    <div className="space-y-4">
+  return (`n    <MobileOptimizedWrapper title="Bank" showHeader={true}>`n      <div className="space-y-4">
       {/* Staking Stats */}
       <div className="grid grid-cols-2 gap-3">
         <div className="p-4 bg-muted rounded-lg border border-border">
@@ -343,25 +351,25 @@ function CurrencyView({
         </div>
       </div>
 
-      {/* Deposit */}
+      {/* Deposit; haptic(HapticPattern.LIGHT) */}
       <div className="p-4 bg-muted rounded-lg border border-border space-y-3">
-        <h4 className="font-bold text-sm">Deposit VOID</h4>
+        <h4 className="font-bold text-sm">Deposit; haptic(HapticPattern.LIGHT) VOID</h4>
         <div className="flex gap-2">
           <input
             type="number"
             min={0}
             max={balance}
-            value={depositAmount}
-            onChange={(e) => setDepositAmount(parseInt(e.target.value) || 0)}
-            placeholder="Amount to deposit"
+            value={deposit; haptic(HapticPattern.LIGHT)Amount}
+            onChange={(e) => setDeposit; haptic(HapticPattern.LIGHT)Amount(parseInt(e.target.value) || 0)}
+            placeholder="Amount to deposit; haptic(HapticPattern.LIGHT)"
             className="flex-1 px-3 py-2 rounded-lg bg-background border border-border outline-none focus:border-primary"
           />
           <button
-            onClick={handleDeposit}
-            disabled={depositAmount <= 0 || depositAmount > balance}
+            onClick={handleDeposit; haptic(HapticPattern.LIGHT)}
+            disabled={deposit; haptic(HapticPattern.LIGHT)Amount <= 0 || deposit; haptic(HapticPattern.LIGHT)Amount > balance}
             className="px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 disabled:opacity-50"
           >
-            Deposit
+            Deposit; haptic(HapticPattern.LIGHT)
           </button>
         </div>
         <p className="text-xs text-muted-foreground">
@@ -369,29 +377,29 @@ function CurrencyView({
         </p>
       </div>
 
-      {/* Withdraw */}
+      {/* Withdraw; haptic(HapticPattern.LIGHT) */}
       <div className="p-4 bg-muted rounded-lg border border-border space-y-3">
-        <h4 className="font-bold text-sm">Withdraw VOID</h4>
+        <h4 className="font-bold text-sm">Withdraw; haptic(HapticPattern.LIGHT) VOID</h4>
         <div className="flex gap-2">
           <input
             type="number"
             min={0}
             max={Math.min(staked, remainingLimit)}
-            value={withdrawAmount}
-            onChange={(e) => setWithdrawAmount(parseInt(e.target.value) || 0)}
-            placeholder="Amount to withdraw"
+            value={withdraw; haptic(HapticPattern.LIGHT)Amount}
+            onChange={(e) => setWithdraw; haptic(HapticPattern.LIGHT)Amount(parseInt(e.target.value) || 0)}
+            placeholder="Amount to withdraw; haptic(HapticPattern.LIGHT)"
             className="flex-1 px-3 py-2 rounded-lg bg-background border border-border outline-none focus:border-primary"
           />
           <button
-            onClick={handleWithdraw}
-            disabled={withdrawAmount <= 0 || withdrawAmount > staked || withdrawAmount > remainingLimit}
+            onClick={handleWithdraw; haptic(HapticPattern.LIGHT)}
+            disabled={withdraw; haptic(HapticPattern.LIGHT)Amount <= 0 || withdraw; haptic(HapticPattern.LIGHT)Amount > staked || withdraw; haptic(HapticPattern.LIGHT)Amount > remainingLimit}
             className="px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 disabled:opacity-50"
           >
-            Withdraw
+            Withdraw; haptic(HapticPattern.LIGHT)
           </button>
         </div>
         <p className="text-xs text-muted-foreground">
-          Daily limit: {withdrawnToday.toLocaleString()} / {dailyLimit.toLocaleString()} used
+          Daily limit: {withdraw; haptic(HapticPattern.LIGHT)nToday.toLocaleString()} / {dailyLimit.toLocaleString()} used
         </p>
       </div>
     </div>
@@ -400,8 +408,8 @@ function CurrencyView({
 
 function HistoryView({ transactions }: { transactions: Transaction[] }) {
   const typeIcons = {
-    deposit: '📥',
-    withdraw: '📤',
+    deposit; haptic(HapticPattern.LIGHT): '📥',
+    withdraw; haptic(HapticPattern.LIGHT): '📤',
     transfer: '🔄',
     loan: '🤝',
     interest: '💹',
@@ -428,9 +436,9 @@ function HistoryView({ transactions }: { transactions: Transaction[] }) {
               <div className="text-right">
                 <p className={cn(
                   "text-sm font-bold",
-                  tx.type === 'deposit' || tx.type === 'interest' ? "text-green-500" : "text-red-500"
+                  tx.type === 'deposit; haptic(HapticPattern.LIGHT)' || tx.type === 'interest' ? "text-green-500" : "text-red-500"
                 )}>
-                  {tx.type === 'deposit' || tx.type === 'interest' ? '+' : '-'}{tx.amount} 💰
+                  {tx.type === 'deposit; haptic(HapticPattern.LIGHT)' || tx.type === 'interest' ? '+' : '-'}{tx.amount} 💰
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {new Date(tx.timestamp).toLocaleDateString()}
