@@ -79,8 +79,7 @@ export function LeaderboardsSystem() {
     { key: 'daily', label: 'Today' },
   ];
 
-  return (
-    <div className="space-y-4">
+  return (`n    <MobileOptimizedWrapper title="Leaderboards" showHeader={true}>`n      <div ref={pullRef as any} className="space-y-4">
       {/* Category Tabs */}
       <div className="overflow-x-auto -mx-4 px-4">
         <div className="flex gap-2 min-w-max">
