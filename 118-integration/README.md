@@ -1,5 +1,64 @@
 # 🚀 VOID2 → 118 Complete Integration Package
 
+---
+
+## ⚠️ **CRITICAL: READ FIRST BEFORE INTEGRATION**
+
+**This package requires significant setup that is NOT included in these files.**
+
+### 🔴 Required Documentation (READ THESE FIRST):
+
+1. **[PREREQUISITES.md](./PREREQUISITES.md)** - Complete dependency list, TypeScript config, UI components, database schema
+2. **[SERVER-ROUTES-REFERENCE.md](./SERVER-ROUTES-REFERENCE.md)** - All backend API routes you must implement
+3. **[shared-files/](./shared-files/)** - 5 required files to copy to your project
+
+### ❌ Common Mistakes (Why Integration Fails):
+
+- **"I copied the files but get TypeScript errors"** → You're missing shadcn/ui components and path aliases
+- **"Components render but nothing happens"** → Backend routes not implemented (404 errors)
+- **"Token imports break compilation"** → Need to copy `token-config.ts` from shared-files/
+- **"Smart contracts have 0x000... addresses"** → Deploy contracts first, update addresses
+
+### ✅ Minimum Requirements Before Starting:
+
+```bash
+# 1. Install ALL dependencies
+npm install clsx tailwind-merge wagmi viem @coinbase/onchainkit @tanstack/react-query
+
+# 2. Add shadcn/ui components (11 required)
+npx shadcn-ui@latest add button card input label dialog tabs badge slider toast select checkbox
+
+# 3. Copy shared files to your project
+cp shared-files/token-config.ts src/lib/
+cp shared-files/utils.ts src/lib/
+cp shared-files/wagmi-config.ts src/lib/
+cp shared-files/mobile-layout-context.tsx src/contexts/
+cp shared-files/use-player-state.ts src/hooks/
+
+# 4. Implement backend routes (see SERVER-ROUTES-REFERENCE.md)
+# - Session: POST /api/session/login, GET /api/session/me
+# - Jukebox: GET /api/jukebox/queue, POST /api/jukebox/add
+# - Tipping: GET /api/tips/received, GET /api/tips/sent
+# - Housing: GET /api/houses/:address, POST /api/houses/save
+# - Agency: GET /api/land/parcels, GET /api/sku/marketplace
+# ... (15+ endpoints total)
+
+# 5. Configure TypeScript paths (tsconfig.json)
+{
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
+}
+```
+
+**📋 Integration Checklist:** See [PREREQUISITES.md](./PREREQUISITES.md#integration-checklist) (7 phases)
+
+**❓ Having Issues?** See [PREREQUISITES.md](./PREREQUISITES.md#common-integration-failures)
+
+---
+
 ## 📦 What's Included
 
 This package contains **all 8 major features** from void2, ready to integrate into the 118 metaverse project.
