@@ -1,0 +1,88 @@
+{
+  "name": "web3-infrastructure",
+  "version": "1.0.0",
+  "description": "Bare-bones Web3/WebSocket infrastructure extracted from VOID2 - NO game engine",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch server/index.ts",
+    "build": "tsc",
+    "start": "node dist/server/index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "express-session": "^1.18.0",
+    "ws": "^8.16.0",
+    "ethers": "^6.10.0",
+    "zod": "^3.22.4",
+    "@tanstack/react-query": "^5.17.19",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "framer-motion": "^11.0.0",
+    "lucide-react": "^0.320.0",
+    "@coinbase/onchainkit": "^0.29.0",
+    "@reown/appkit": "^1.0.0",
+    "@reown/appkit-adapter-wagmi": "^1.0.0",
+    "viem": "^2.7.0",
+    "wagmi": "^2.5.0",
+    "permissionless": "^0.1.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/express-session": "^1.17.10",
+    "@types/node": "^20.11.5",
+    "@types/react": "^18.2.48",
+    "@types/ws": "^8.5.10",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
+  },
+  "keywords": [
+    "web3",
+    "websocket",
+    "authentication",
+    "coinbase",
+    "proximity-chat",
+    "blockchain",
+    "ethereum",
+    "base"
+  ],
+  "author": "VOID2 Team",
+  "license": "MIT",
+  "notes": {
+    "what-is-included": [
+      "Beta notice & epilepsy warning modals",
+      "VOID splash screen with interactive puzzle minigame",
+      "Multi-stage intro sequence (gears, minigame, portal)",
+      "Skip functionality with cookie persistence",
+      "Mobile controls (virtual joystick + action buttons)",
+      "Safe area support (iPhone notch, home indicator)",
+      "WalletConnect v2 integration (300+ wallets)",
+      "Base chain support (mainnet + sepolia)",
+      "OnchainKit components (official Base devkit)",
+      "Paymaster service (gasless transactions)",
+      "Smart wallet support (ERC-4337)",
+      "WebSocket infrastructure with auto-reconnect",
+      "Coinbase CDP wallet authentication",
+      "HTTP session management",
+      "Global and proximity chat",
+      "Player state management",
+      "Smart contract integrations (tipping, jukebox)",
+      "Dev mode bypass"
+    ],
+    "what-is-NOT-included": [
+      "Babylon.js 3D engine",
+      "Character rendering system",
+      "Game world/city generation",
+      "Animation state machines",
+      "Physics/collision detection",
+      "Camera controllers",
+      "3D mesh loaders"
+    ],
+    "removed-dependencies": [
+      "@babylonjs/core",
+      "@babylonjs/loaders",
+      "@babylonjs/materials",
+      "@babylonjs/inspector",
+      "All 3D rendering libraries"
+    ]
+  }
+}

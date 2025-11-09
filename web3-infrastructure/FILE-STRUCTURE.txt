@@ -1,0 +1,106 @@
+web3-infrastructure/
+│
+├── README.md                          # Full documentation
+├── EXTRACTION-SUMMARY.md              # What was extracted and why
+├── INTRO-SYSTEM-GUIDE.md              # Complete intro system documentation
+├── EXAMPLE-INTEGRATION.tsx            # Working React example with intro
+├── package.json                       # Minimal dependencies (NO Babylon.js)
+│
+├── hooks/                             # React hooks (CLEAN - no game code)
+│   ├── use-websocket.ts              # WebSocket connection + auto-reconnect
+│   ├── use-player-state.ts           # Player lifecycle management
+│   ├── use-chat-handler.ts           # Chat message handling
+│   ├── use-connection-state.ts       # Ping/error/rate-limit handling
+│   └── use-session.ts                # HTTP session management
+│
+├── components/                        # UI components (CLEAN - no game engine)
+│   ├── beta-notice-modal.tsx         # Beta notice (retro terminal)
+│   ├── epilepsy-warning-modal.tsx    # Health warning
+│   ├── void-splash-screen.tsx        # Main intro coordinator
+│   └── void-stages/                  # VOID intro stages
+│       ├── void-stage-gears-unlocking.tsx    # Stage 1 (gears animation)
+│       ├── void-stage4-minigame.tsx          # Stage 2 (puzzle minigame)
+│       └── void-stage5-portal.tsx            # Stage 3 (portal effect)
+│
+└── shared/                            # Shared types (CLEAN - no game types)
+    ├── schema.ts                     # TypeScript interfaces + Zod validation
+    └── constants.ts                  # Configuration constants
+
+---
+
+TOTAL FILES: 18
+TOTAL DEPENDENCIES: ~10 packages (vs 50+ in original)
+BUNDLE SIZE: ~3 MB (vs ~15 MB with Babylon.js)
+
+---
+
+WHAT YOU GET:
+✅ Beta notice modal (retro terminal aesthetic)
+✅ Epilepsy warning modal (health & safety)
+✅ VOID splash screen (3-stage animated intro)
+✅ Interactive consciousness gathering puzzle
+✅ Skip functionality (ESC + button)
+✅ Cookie persistence (auto-skip repeats)
+✅ WebSocket infrastructure with auto-reconnect
+✅ Coinbase CDP wallet authentication
+✅ Dev mode bypass (?devmode=true)
+✅ HTTP session management (express-session)
+✅ Signature verification (Coinbase + ECDSA)
+✅ Global chat (all players)
+✅ Proximity chat (nearby players only)
+✅ Nearby players detection
+✅ Rate limiting (chat, auth)
+✅ Typed message schemas (TypeScript + Zod)
+✅ Connection state management
+✅ Ping monitoring
+✅ Smart contract types (tipping, jukebox)
+
+WHAT YOU DON'T GET:
+❌ Babylon.js 3D engine
+❌ Character rendering
+❌ GLB model loading
+❌ Animation state machines
+❌ Game world generation
+❌ Physics/collision
+❌ Camera controllers
+❌ 3D mesh rendering
+❌ Any game engine code
+
+---
+
+USE CASE:
+You want to build ANY React app with:
+- Web3 wallet authentication
+- Real-time WebSocket communication
+- Proximity-based features
+- On-chain integrations
+- Session persistence
+
+But you DON'T want:
+- 3D rendering
+- Game engine overhead
+- Character systems
+- Animation complexity
+
+---
+
+EXAMPLE APPS YOU CAN BUILD:
+✅ Web3 chat room with proximity features
+✅ Multiplayer board game (2D)
+✅ Social platform with wallet auth
+✅ Real-time collaboration tool
+✅ On-chain voting/governance app
+✅ NFT marketplace with chat
+✅ DAO dashboard with WebSockets
+✅ ANY app needing Web3 + real-time sockets
+
+---
+
+INTEGRATION:
+1. Copy hooks/ and shared/ to your project
+2. Install dependencies (8 packages)
+3. Use hooks in your React components
+4. Implement your own UI
+5. No game engine bloat!
+
+See EXAMPLE-INTEGRATION.tsx for complete working code.
