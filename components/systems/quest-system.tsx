@@ -6,13 +6,6 @@
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { useMobileHUD } from '@/lib/mobile-hud-context';
-import { 
-  MobileOptimizedWrapper, 
-  MobileButton, 
-  MobileInput 
-} from '@/components/mobile/MobileOptimizedComponents';
-import { useHaptic, usePullToRefresh, useSwipeGesture } from '@/lib/mobile-optimization-hooks';
-import { HapticPattern } from '@/lib/mobile-optimization';
 
 interface Quest {
   id: string;
@@ -37,8 +30,6 @@ export function QuestSystem() {
   const [activeTab, setActiveTab] = useState<'daily' | 'weekly' | 'seasonal' | 'story'>('daily');
   const [isLoading, setIsLoading] = useState(true);
   const { pushNotification, preferences } = useMobileHUD();
-  const haptic = useHaptic();
-  const { ref: pullRef, isRefreshing } = usePullToRefresh(fetchQuests);
 
   useEffect(() => {
     fetchQuests();
@@ -108,13 +99,14 @@ export function QuestSystem() {
     );
   }
 
-  return (`n    <MobileOptimizedWrapper title="Quests" showHeader={true}>`n      <div ref={pullRef as any} className="space-y-4">
+  return (
+    <div className="space-y-4">
       {/* Category Tabs */}
       <div className="flex gap-2 overflow-x-auto pb-2">
         {(['daily', 'weekly', 'seasonal', 'story'] as const).map((category) => (
           <button
             key={category}
-            onClick={() => { haptic(HapticPattern.LIGHT); setActiveTab(category)); }
+            onClick={() => setActiveTab(category)}
             className={cn(
               "flex items-center gap-2 px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-all min-w-[100px]",
               activeTab === category

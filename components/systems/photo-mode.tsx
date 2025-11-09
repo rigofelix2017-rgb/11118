@@ -6,13 +6,6 @@
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { useMobileHUD } from '@/lib/mobile-hud-context';
-import { 
-  MobileOptimizedWrapper, 
-  MobileButton, 
-  MobileInput 
-} from '@/components/mobile/MobileOptimizedComponents';
-import { useHaptic, usePullToRefresh } from '@/lib/mobile-optimization-hooks';
-import { HapticPattern } from '@/lib/mobile-optimization';
 
 interface Photo {
   id: string;
@@ -93,8 +86,7 @@ export function PhotoMode() {
   ];
 
   return (
-    <MobileOptimizedWrapper title="Photo Mode" showHeader={true}>
-      <div className="space-y-4">
+    <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex gap-2">
@@ -187,7 +179,6 @@ function CameraView({
   onCapture: () => void;
 }) {
   const { pushNotification, preferences } = useMobileHUD();
-  const haptic = useHaptic();
 
   const handleCapture = async () => {
     try {
@@ -229,8 +220,7 @@ function CameraView({
   }
 
   return (
-    <MobileOptimizedWrapper title="Photo Mode" showHeader={true}>
-      <div className="space-y-4">
+    <div className="space-y-4">
       {/* Camera Preview */}
       <div className="aspect-video bg-muted rounded-lg border-2 border-border flex items-center justify-center relative overflow-hidden">
         <span className="text-4xl">📸</span>
@@ -367,8 +357,7 @@ function GalleryView({
   });
 
   return (
-    <MobileOptimizedWrapper title="Photo Mode" showHeader={true}>
-      <div className="space-y-4">
+    <div className="space-y-4">
       {/* Sort */}
       <select
         value={sortBy}
@@ -428,7 +417,6 @@ function PhotoDetailModal({
 }) {
   const [showMintNFT, setShowMintNFT] = useState(false);
   const { pushNotification } = useMobileHUD();
-  const haptic = useHaptic();
 
   const handleMintNFT = async () => {
     try {

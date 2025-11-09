@@ -6,13 +6,6 @@
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { useMobileHUD } from '@/lib/mobile-hud-context';
-import { 
-  MobileOptimizedWrapper, 
-  MobileButton, 
-  MobileInput 
-} from '@/components/mobile/MobileOptimizedComponents';
-import { useHaptic, usePullToRefresh } from '@/lib/mobile-optimization-hooks';
-import { HapticPattern } from '@/lib/mobile-optimization';
 
 interface Emote {
   id: string;
@@ -82,8 +75,7 @@ export function EmoteSystem() {
   });
 
   return (
-    <MobileOptimizedWrapper title="Emote System" showHeader={true}>
-      <div className="space-y-4">
+    <div className="space-y-4">
       {/* Emote Wheel Button */}
       <button
         onClick={() => setShowEmoteWheel(true)}
@@ -245,7 +237,6 @@ function EmoteCard({
 }) {
   const [showSlotPicker, setShowSlotPicker] = useState(false);
   const { pushNotification, preferences } = useMobileHUD();
-  const haptic = useHaptic();
 
   const handleUseEmote = async () => {
     try {

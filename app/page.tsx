@@ -40,10 +40,10 @@ import { BuildingConstructor } from "@/components/building-constructor"
 import { EnhancedInventorySystem } from "@/components/enhanced-inventory-system"
 import type { PlayerXp, DailyTask } from "@/lib/xp/types"
 import { useOrientation } from "@/hooks/use-orientation"
-import { useIsMobile } from "@/hooks/use-mobile"
+import { useIsMobile } from "@/hooks/use-mobile"`nimport { SystemsHub } from "@/components/systems-hub"`nimport { SystemsHubButton } from "@/components/systems-hub-button"
 
 export default function VOIDMetaverse() {
-  const [phoneOpen, setPhoneOpen] = useState(false)
+  const [systemsHubOpen, setSystemsHubOpen] = useState(false)`n  const [phoneOpen, setPhoneOpen] = useState(false)
   const [dashboardOpen, setDashboardOpen] = useState(false)
   const [inventoryOpen, setInventoryOpen] = useState(false)
   const [activeGame, setActiveGame] = useState<string | null>(null)
@@ -193,6 +193,11 @@ export default function VOIDMetaverse() {
 
     const handleKeyPress = (e: KeyboardEvent) => {
       const isMovementKey = ["w", "a", "s", "d"].includes(e.key.toLowerCase())
+
+      if (e.key === "s" || e.key === "S") {
+        e.preventDefault()
+        setSystemsHubOpen(!systemsHubOpen)
+      }
 
       if (e.key === "p" || e.key === "P") {
         e.preventDefault()
@@ -915,6 +920,18 @@ export default function VOIDMetaverse() {
       </AnimatePresence>
 
       {gameStarted && userProfile && <XpDrawer xp={playerXp} tasks={dailyTasks} />}
+
+      <SystemsHub
+        isOpen={systemsHubOpen}
+        onClose={() => setSystemsHubOpen(false)}
+      />
     </div>
   )
+
+      {gameStarted && userProfile && (
+        <SystemsHubButton
+          onClick={() => setSystemsHubOpen(true)}
+          isMobile={isMobile}
+        />
+      )}
 }
