@@ -1,0 +1,865 @@
+// Prisma Schema for 119 Metaverse Platform
+// Complete database architecture for all systems
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// 1. USERS & AUTHENTICATION
+// ============================================
+
+model User {
+  id            String    @id @default(cuid())
+  walletAddress String    @unique
+  email         String?   @unique
+  username      String?   @unique
+  role          UserRole  @default(PLAYER)
+  isActive      Boolean   @default(true)
+  isBanned      Boolean   @default(false)
+  banReason     String?
+  banExpiresAt  DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  profile         UserProfile?
+  sessions        UserSession[]
+  inventory       InventoryItem[]
+  houses          House[]
+  houseVisits     HouseVisitor[]
+  friendshipsFrom Friendship[]     @relation("UserFriendships")
+  friendshipsTo   Friendship[]     @relation("FriendFriendships")
+  sentMessages    DirectMessage[]  @relation("SentMessages")
+  receivedMessages DirectMessage[] @relation("ReceivedMessages")
+  groupMemberships GroupMember[]
+  groupMessages   GroupMessage[]
+  sentTips        Tip[]            @relation("TipSender")
+  receivedTips    Tip[]            @relation("TipReceiver")
+  transactions    Transaction[]
+  achievements    UserAchievement[]
+  xpLogs          XPLog[]
+  marketListings  MarketplaceListing[]
+  trades          Trade[]          @relation("TradeInitiator")
+  tradePartners   Trade[]          @relation("TradePartner")
+  casinoBets      CasinoBet[]
+  proposals       Proposal[]
+  votes           Vote[]
+  vehicles        Vehicle[]
+  activityLogs    ActivityLog[]
+
+  @@index([walletAddress])
+  @@index([username])
+}
+
+enum UserRole {
+  PLAYER
+  MODERATOR
+  ADMIN
+  DEVELOPER
+}
+
+model UserProfile {
+  id               String    @id @default(cuid())
+  userId           String    @unique
+  displayName      String?
+  bio              String?   @db.Text
+  avatar           String?
+  banner           String?
+  level            Int       @default(1)
+  xp               Int       @default(0)
+  currentTitle     String?
+  pronouns         String?
+  discordUsername  String?
+  twitterHandle    String?
+  showOnlineStatus Boolean   @default(true)
+  theme            String    @default("dark")
+  language         String    @default("en")
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model UserSession {
+  id           String   @id @default(cuid())
+  userId       String
+  sessionToken String   @unique
+  ipAddress    String?
+  userAgent    String?
+  device       String?
+  browser      String?
+  location     String?
+  isActive     Boolean  @default(true)
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([sessionToken])
+}
+
+// ============================================
+// 2. INVENTORY & ITEMS
+// ============================================
+
+model Item {
+  id          String     @id @default(cuid())
+  name        String
+  description String?    @db.Text
+  category    ItemCategory
+  rarity      ItemRarity @default(COMMON)
+  type        String
+  icon        String?
+  model       String?
+  isStackable Boolean    @default(false)
+  maxStack    Int        @default(1)
+  isTradeable Boolean    @default(true)
+  baseValue   Int        @default(0)
+  attributes  Json?      // { "attack": 10, "defense": 5 }
+  requirements Json?     // { "level": 5, "class": "warrior" }
+  effects     Json?      // Buffs, debuffs, etc.
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  inventoryItems InventoryItem[]
+  furnitureInstances FurnitureInstance[]
+  marketListings MarketplaceListing[]
+  tradeItems TradeItem[]
+
+  @@index([category])
+  @@index([rarity])
+}
+
+enum ItemCategory {
+  WEAPON
+  ARMOR
+  ACCESSORY
+  CONSUMABLE
+  MATERIAL
+  FURNITURE
+  VEHICLE
+  PET
+  EMOTE
+  SKIN
+  NFT
+}
+
+enum ItemRarity {
+  COMMON
+  UNCOMMON
+  RARE
+  EPIC
+  LEGENDARY
+  MYTHIC
+}
+
+model InventoryItem {
+  id        String   @id @default(cuid())
+  userId    String
+  itemId    String
+  quantity  Int      @default(1)
+  isEquipped Boolean @default(false)
+  slot      String?  // "weapon", "armor", etc.
+  customData Json?   // Enchantments, durability, etc.
+  acquiredAt DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  item Item @relation(fields: [itemId], references: [id])
+
+  @@unique([userId, itemId, slot])
+  @@index([userId])
+  @@index([itemId])
+}
+
+model FurnitureInstance {
+  id         String   @id @default(cuid())
+  houseId    String
+  itemId     String
+  positionX  Float
+  positionY  Float
+  positionZ  Float
+  rotationX  Float    @default(0)
+  rotationY  Float    @default(0)
+  rotationZ  Float    @default(0)
+  scale      Float    @default(1)
+  customData Json?
+  placedAt   DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  house House @relation(fields: [houseId], references: [id], onDelete: Cascade)
+  item  Item  @relation(fields: [itemId], references: [id])
+
+  @@index([houseId])
+}
+
+// ============================================
+// 3. HOUSING SYSTEM
+// ============================================
+
+model House {
+  id          String   @id @default(cuid())
+  ownerId     String
+  name        String
+  description String?  @db.Text
+  size        HouseSize @default(SMALL)
+  theme       String?
+  privacy     HousePrivacy @default(PRIVATE)
+  maxVisitors Int      @default(10)
+  positionX   Float?
+  positionY   Float?
+  positionZ   Float?
+  isPublished Boolean  @default(false)
+  likes       Int      @default(0)
+  visits      Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  owner     User                @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  furniture FurnitureInstance[]
+  visitors  HouseVisitor[]
+
+  @@index([ownerId])
+  @@index([isPublished])
+}
+
+enum HouseSize {
+  SMALL
+  MEDIUM
+  LARGE
+  MANSION
+  ESTATE
+}
+
+enum HousePrivacy {
+  PRIVATE
+  FRIENDS
+  PUBLIC
+}
+
+model HouseVisitor {
+  id        String   @id @default(cuid())
+  houseId   String
+  visitorId String
+  visitedAt DateTime @default(now())
+
+  house   House @relation(fields: [houseId], references: [id], onDelete: Cascade)
+  visitor User  @relation(fields: [visitorId], references: [id], onDelete: Cascade)
+
+  @@unique([houseId, visitorId, visitedAt])
+  @@index([houseId])
+  @@index([visitorId])
+}
+
+// ============================================
+// 4. SOCIAL SYSTEM
+// ============================================
+
+model Friendship {
+  id         String           @id @default(cuid())
+  userId     String
+  friendId   String
+  status     FriendshipStatus @default(PENDING)
+  createdAt  DateTime         @default(now())
+  acceptedAt DateTime?
+
+  user   User @relation("UserFriendships", fields: [userId], references: [id], onDelete: Cascade)
+  friend User @relation("FriendFriendships", fields: [friendId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, friendId])
+  @@index([userId])
+  @@index([friendId])
+}
+
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+  BLOCKED
+}
+
+model DirectMessage {
+  id         String   @id @default(cuid())
+  senderId   String
+  receiverId String
+  content    String   @db.Text
+  attachments Json?   // Images, links, etc.
+  isRead     Boolean  @default(false)
+  readAt     DateTime?
+  sentAt     DateTime @default(now())
+
+  sender   User @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@index([senderId, receiverId])
+  @@index([receiverId])
+}
+
+model Group {
+  id          String   @id @default(cuid())
+  name        String
+  description String?  @db.Text
+  icon        String?
+  isPublic    Boolean  @default(false)
+  maxMembers  Int      @default(50)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  members  GroupMember[]
+  messages GroupMessage[]
+
+  @@index([isPublic])
+}
+
+model GroupMember {
+  id       String      @id @default(cuid())
+  groupId  String
+  userId   String
+  role     MemberRole  @default(MEMBER)
+  joinedAt DateTime    @default(now())
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@index([groupId])
+  @@index([userId])
+}
+
+enum MemberRole {
+  OWNER
+  ADMIN
+  MODERATOR
+  MEMBER
+}
+
+model GroupMessage {
+  id          String   @id @default(cuid())
+  groupId     String
+  senderId    String
+  content     String   @db.Text
+  attachments Json?
+  sentAt      DateTime @default(now())
+
+  group  Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  sender User  @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([groupId])
+  @@index([senderId])
+}
+
+// ============================================
+// 5. ECONOMY & TRANSACTIONS
+// ============================================
+
+model Tip {
+  id         String   @id @default(cuid())
+  senderId   String
+  receiverId String
+  amount     Int
+  message    String?
+  txHash     String?  @unique
+  status     TipStatus @default(PENDING)
+  createdAt  DateTime @default(now())
+  completedAt DateTime?
+
+  sender   User @relation("TipSender", fields: [senderId], references: [id])
+  receiver User @relation("TipReceiver", fields: [receiverId], references: [id])
+
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([txHash])
+}
+
+enum TipStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+model Transaction {
+  id          String          @id @default(cuid())
+  userId      String
+  type        TransactionType
+  amount      Int
+  description String?
+  metadata    Json?           // Context-specific data
+  txHash      String?         @unique
+  status      TxStatus        @default(PENDING)
+  createdAt   DateTime        @default(now())
+  completedAt DateTime?
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([type])
+  @@index([status])
+}
+
+enum TransactionType {
+  TIP_SENT
+  TIP_RECEIVED
+  PURCHASE
+  SALE
+  TRADE
+  BET
+  REWARD
+  QUEST
+  ACHIEVEMENT
+  STAKE
+  UNSTAKE
+}
+
+enum TxStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+// ============================================
+// 6. PROGRESSION & ACHIEVEMENTS
+// ============================================
+
+model Achievement {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  name        String
+  description String   @db.Text
+  icon        String?
+  rarity      ItemRarity @default(COMMON)
+  category    String
+  points      Int      @default(10)
+  requirements Json    // { "type": "quest_complete", "count": 10 }
+  rewards     Json?    // { "xp": 100, "items": ["item_id"] }
+  isHidden    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  userAchievements UserAchievement[]
+
+  @@index([category])
+}
+
+model UserAchievement {
+  id            String   @id @default(cuid())
+  userId        String
+  achievementId String
+  progress      Int      @default(0)
+  isUnlocked    Boolean  @default(false)
+  unlockedAt    DateTime?
+  createdAt     DateTime @default(now())
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement Achievement @relation(fields: [achievementId], references: [id])
+
+  @@unique([userId, achievementId])
+  @@index([userId])
+  @@index([achievementId])
+}
+
+model XPLog {
+  id        String   @id @default(cuid())
+  userId    String
+  amount    Int
+  source    XPSource
+  metadata  Json?    // Quest ID, achievement ID, etc.
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+enum XPSource {
+  QUEST
+  ACHIEVEMENT
+  SOCIAL
+  EXPLORATION
+  COMBAT
+  CRAFTING
+  EVENT
+  DAILY_LOGIN
+  REFERRAL
+}
+
+// ============================================
+// 7. MARKETPLACE & TRADING
+// ============================================
+
+model MarketplaceListing {
+  id          String        @id @default(cuid())
+  sellerId    String
+  itemId      String
+  quantity    Int           @default(1)
+  price       Int
+  description String?
+  status      ListingStatus @default(ACTIVE)
+  createdAt   DateTime      @default(now())
+  expiresAt   DateTime?
+  soldAt      DateTime?
+
+  seller User @relation(fields: [sellerId], references: [id])
+  item   Item @relation(fields: [itemId], references: [id])
+
+  @@index([sellerId])
+  @@index([itemId])
+  @@index([status])
+}
+
+enum ListingStatus {
+  ACTIVE
+  SOLD
+  CANCELLED
+  EXPIRED
+}
+
+model Trade {
+  id           String      @id @default(cuid())
+  initiatorId  String
+  partnerId    String
+  status       TradeStatus @default(PENDING)
+  createdAt    DateTime    @default(now())
+  acceptedAt   DateTime?
+  completedAt  DateTime?
+
+  initiator User        @relation("TradeInitiator", fields: [initiatorId], references: [id])
+  partner   User        @relation("TradePartner", fields: [partnerId], references: [id])
+  items     TradeItem[]
+
+  @@index([initiatorId])
+  @@index([partnerId])
+  @@index([status])
+}
+
+enum TradeStatus {
+  PENDING
+  ACCEPTED
+  COMPLETED
+  CANCELLED
+  REJECTED
+}
+
+model TradeItem {
+  id       String @id @default(cuid())
+  tradeId  String
+  itemId   String
+  quantity Int    @default(1)
+  fromUser String // "initiator" or "partner"
+
+  trade Trade @relation(fields: [tradeId], references: [id], onDelete: Cascade)
+  item  Item  @relation(fields: [itemId], references: [id])
+
+  @@index([tradeId])
+}
+
+// ============================================
+// 8. CASINO & GAMING
+// ============================================
+
+model CasinoGame {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  name        String
+  description String?  @db.Text
+  minBet      Int      @default(10)
+  maxBet      Int      @default(1000)
+  houseEdge   Float    @default(0.02) // 2%
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  bets CasinoBet[]
+
+  @@index([isActive])
+}
+
+model CasinoBet {
+  id         String    @id @default(cuid())
+  userId     String
+  gameId     String
+  betAmount  Int
+  multiplier Float?
+  winAmount  Int       @default(0)
+  result     BetResult
+  metadata   Json?     // Game-specific data
+  createdAt  DateTime  @default(now())
+
+  user User        @relation(fields: [userId], references: [id])
+  game CasinoGame @relation(fields: [gameId], references: [id])
+
+  @@index([userId])
+  @@index([gameId])
+  @@index([createdAt])
+}
+
+enum BetResult {
+  WIN
+  LOSS
+  PUSH
+}
+
+model Leaderboard {
+  id         String         @id @default(cuid())
+  key        String         @unique
+  name       String
+  category   LeaderboardCategory
+  timeframe  LeaderboardTimeframe @default(ALL_TIME)
+  entries    Json           // Top 100 cached entries
+  updatedAt  DateTime       @updatedAt
+  createdAt  DateTime       @default(now())
+
+  @@index([category])
+}
+
+enum LeaderboardCategory {
+  XP
+  LEVEL
+  WEALTH
+  CASINO_WINS
+  ACHIEVEMENTS
+  QUESTS
+  SOCIAL
+  HOUSES
+}
+
+enum LeaderboardTimeframe {
+  DAILY
+  WEEKLY
+  MONTHLY
+  ALL_TIME
+}
+
+// ============================================
+// 9. GOVERNANCE & DAO
+// ============================================
+
+model Proposal {
+  id          String         @id @default(cuid())
+  proposerId  String
+  title       String
+  description String         @db.Text
+  category    ProposalCategory
+  status      ProposalStatus @default(ACTIVE)
+  votesFor    Int            @default(0)
+  votesAgainst Int           @default(0)
+  quorum      Int            @default(100)
+  createdAt   DateTime       @default(now())
+  startsAt    DateTime
+  endsAt      DateTime
+  executedAt  DateTime?
+
+  proposer User   @relation(fields: [proposerId], references: [id])
+  votes    Vote[]
+
+  @@index([proposerId])
+  @@index([status])
+  @@index([endsAt])
+}
+
+enum ProposalCategory {
+  GOVERNANCE
+  ECONOMY
+  FEATURE
+  RULES
+  EVENT
+}
+
+enum ProposalStatus {
+  ACTIVE
+  PASSED
+  REJECTED
+  EXECUTED
+  CANCELLED
+}
+
+model Vote {
+  id         String   @id @default(cuid())
+  proposalId String
+  voterId    String
+  vote       VoteType
+  weight     Int      @default(1) // Based on tokens held
+  createdAt  DateTime @default(now())
+
+  proposal Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  voter    User     @relation(fields: [voterId], references: [id])
+
+  @@unique([proposalId, voterId])
+  @@index([proposalId])
+  @@index([voterId])
+}
+
+enum VoteType {
+  FOR
+  AGAINST
+  ABSTAIN
+}
+
+// ============================================
+// 10. WORLD & DISTRICTS
+// ============================================
+
+model District {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?  @db.Text
+  type        DistrictType
+  positionX   Float
+  positionY   Float
+  positionZ   Float
+  radius      Float    @default(100)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  buildings DistrictBuilding[]
+
+  @@index([type])
+}
+
+enum DistrictType {
+  RESIDENTIAL
+  COMMERCIAL
+  INDUSTRIAL
+  ENTERTAINMENT
+  GOVERNMENT
+  NATURE
+}
+
+model DistrictBuilding {
+  id         String       @id @default(cuid())
+  districtId String
+  name       String
+  type       BuildingType
+  positionX  Float
+  positionY  Float
+  positionZ  Float
+  model      String?
+  isActive   Boolean      @default(true)
+  metadata   Json?
+  createdAt  DateTime     @default(now())
+
+  district District @relation(fields: [districtId], references: [id], onDelete: Cascade)
+
+  @@index([districtId])
+  @@index([type])
+}
+
+enum BuildingType {
+  JUKEBOX
+  CASINO
+  MARKET
+  TOWN_HALL
+  CRYSTAL
+  WATCHTOWER
+  MONUMENT
+  SHOP
+  RESTAURANT
+  CLUB
+}
+
+// ============================================
+// 11. VEHICLES
+// ============================================
+
+model Vehicle {
+  id          String       @id @default(cuid())
+  ownerId     String
+  name        String
+  type        VehicleType
+  model       String?
+  speed       Float        @default(1)
+  acceleration Float       @default(1)
+  handling    Float        @default(1)
+  color       String?
+  customizations Json?
+  mileage     Float        @default(0)
+  fuelLevel   Float        @default(100)
+  createdAt   DateTime     @default(now())
+
+  owner  User           @relation(fields: [ownerId], references: [id])
+  spawns VehicleSpawn[]
+
+  @@index([ownerId])
+  @@index([type])
+}
+
+enum VehicleType {
+  CAR
+  MOTORCYCLE
+  HOVERBOARD
+  BIKE
+  SKATEBOARD
+  BOAT
+  HELICOPTER
+}
+
+model VehicleSpawn {
+  id        String   @id @default(cuid())
+  vehicleId String
+  positionX Float
+  positionY Float
+  positionZ Float
+  rotation  Float    @default(0)
+  spawnedAt DateTime @default(now())
+  despawnedAt DateTime?
+
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@index([vehicleId])
+  @@index([spawnedAt])
+}
+
+// ============================================
+// 12. ANALYTICS & MONITORING
+// ============================================
+
+model PerformanceMetric {
+  id        String   @id @default(cuid())
+  userId    String?
+  metric    String   // "fps", "latency", "memory"
+  value     Float
+  device    String?
+  browser   String?
+  createdAt DateTime @default(now())
+
+  @@index([metric])
+  @@index([createdAt])
+}
+
+model ActivityLog {
+  id        String       @id @default(cuid())
+  userId    String
+  action    ActivityType
+  metadata  Json?
+  ipAddress String?
+  createdAt DateTime     @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+enum ActivityType {
+  LOGIN
+  LOGOUT
+  PURCHASE
+  TRADE
+  QUEST_START
+  QUEST_COMPLETE
+  ACHIEVEMENT_UNLOCK
+  HOUSE_VISIT
+  FRIEND_ADD
+  MESSAGE_SEND
+  VOTE_CAST
+  BET_PLACE
+}
