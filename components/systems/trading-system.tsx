@@ -6,6 +6,13 @@
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { useMobileHUD } from '@/lib/mobile-hud-context';
+import { 
+  MobileOptimizedWrapper, 
+  MobileButton, 
+  MobileInput 
+} from '@/components/mobile/MobileOptimizedComponents';
+import { useHaptic, usePullToRefresh } from '@/lib/mobile-optimization-hooks';
+import { HapticPattern } from '@/lib/mobile-optimization';
 
 interface TradeItem {
   id: string;
@@ -71,7 +78,8 @@ export function TradingSystem() {
   }
 
   return (
-    <div className="space-y-4">
+    <MobileOptimizedWrapper title="Trading System" showHeader={true}>
+      <div className="space-y-4">
       {/* Header with Create Button */}
       <div className="flex items-center justify-between">
         <div className="flex gap-2">
@@ -143,6 +151,7 @@ export function TradingSystem() {
 function TradeCard({ trade, onUpdate }: { trade: Trade; onUpdate: () => void }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const { pushNotification, preferences } = useMobileHUD();
+  const haptic = useHaptic();
 
   const handleAccept = async () => {
     try {

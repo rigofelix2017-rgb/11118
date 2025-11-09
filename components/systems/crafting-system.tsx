@@ -6,6 +6,13 @@
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { useMobileHUD } from '@/lib/mobile-hud-context';
+import { 
+  MobileOptimizedWrapper, 
+  MobileButton, 
+  MobileInput 
+} from '@/components/mobile/MobileOptimizedComponents';
+import { useHaptic, usePullToRefresh } from '@/lib/mobile-optimization-hooks';
+import { HapticPattern } from '@/lib/mobile-optimization';
 
 interface Material {
   itemId: string;
@@ -127,7 +134,8 @@ export function CraftingSystem() {
   }
 
   return (
-    <div className="space-y-4">
+    <MobileOptimizedWrapper title="Crafting System" showHeader={true}>
+      <div className="space-y-4">
       {/* Skill Progress */}
       <div className="p-4 bg-muted rounded-lg border border-border">
         <div className="flex items-center justify-between mb-2">
@@ -290,6 +298,7 @@ function RecipeCard({
 function CraftingJobCard({ job, onUpdate }: { job: CraftingJob; onUpdate: () => void }) {
   const [currentProgress, setCurrentProgress] = useState(job.progress);
   const { pushNotification, preferences } = useMobileHUD();
+  const haptic = useHaptic();
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -379,6 +388,7 @@ function RecipeDetailsModal({
   onCraft: () => void;
 }) {
   const { pushNotification } = useMobileHUD();
+  const haptic = useHaptic();
 
   const handleCraft = async () => {
     try {
