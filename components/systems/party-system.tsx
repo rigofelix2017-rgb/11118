@@ -6,6 +6,13 @@
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { useMobileHUD } from '@/lib/mobile-hud-context';
+import { 
+  MobileOptimizedWrapper, 
+  MobileButton, 
+  MobileInput 
+} from '@/components/mobile/MobileOptimizedComponents';
+import { useHaptic, usePullToRefresh } from '@/lib/mobile-optimization-hooks';
+import { HapticPattern } from '@/lib/mobile-optimization';
 
 interface PartyMember {
   id: string;
@@ -84,7 +91,8 @@ export function PartySystem() {
   }
 
   return (
-    <div className="space-y-4">
+    <MobileOptimizedWrapper title="Party System" showHeader={true}>
+      <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex gap-2">
@@ -168,6 +176,7 @@ export function PartySystem() {
 
 function CurrentPartyView({ party, onUpdate }: { party: Party; onUpdate: () => void }) {
   const { pushNotification, preferences } = useMobileHUD();
+  const haptic = useHaptic();
   const [showInvite, setShowInvite] = useState(false);
 
   const currentUser = party.members.find(m => m.id === 'current-user-id'); // Replace with actual user ID
@@ -216,7 +225,8 @@ function CurrentPartyView({ party, onUpdate }: { party: Party; onUpdate: () => v
   };
 
   return (
-    <div className="space-y-4">
+    <MobileOptimizedWrapper title="Party System" showHeader={true}>
+      <div className="space-y-4">
       {/* Party Info */}
       <div className="p-4 bg-muted rounded-lg border border-border">
         <div className="flex items-center justify-between mb-3">
@@ -400,6 +410,7 @@ function PartyMemberCard({
 
 function AvailablePartyCard({ party, onJoin }: { party: Party; onJoin: () => void }) {
   const { pushNotification } = useMobileHUD();
+  const haptic = useHaptic();
 
   const handleJoin = async () => {
     try {
@@ -625,6 +636,7 @@ function InviteToPartyModal({
 }) {
   const [playerName, setPlayerName] = useState('');
   const { pushNotification } = useMobileHUD();
+  const haptic = useHaptic();
 
   const handleInvite = async () => {
     try {

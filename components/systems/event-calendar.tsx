@@ -6,6 +6,13 @@
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { useMobileHUD } from '@/lib/mobile-hud-context';
+import { 
+  MobileOptimizedWrapper, 
+  MobileButton, 
+  MobileInput 
+} from '@/components/mobile/MobileOptimizedComponents';
+import { useHaptic, usePullToRefresh } from '@/lib/mobile-optimization-hooks';
+import { HapticPattern } from '@/lib/mobile-optimization';
 
 interface Event {
   id: string;
@@ -69,7 +76,8 @@ export function EventCalendar() {
     : events.filter(e => e.category === filterCategory);
 
   return (
-    <div className="space-y-4">
+    <MobileOptimizedWrapper title="Event Calendar" showHeader={true}>
+      <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex gap-2">
@@ -235,7 +243,8 @@ function EventListView({
   }
 
   return (
-    <div className="space-y-4">
+    <MobileOptimizedWrapper title="Event Calendar" showHeader={true}>
+      <div className="space-y-4">
       {Object.entries(groupedEvents).map(([date, dateEvents]) => (
         <div key={date}>
           <h4 className="font-bold text-sm mb-2">{date}</h4>
@@ -336,6 +345,7 @@ function EventDetailModal({
   onUpdate: () => void;
 }) {
   const { pushNotification, preferences } = useMobileHUD();
+  const haptic = useHaptic();
   const category = categories.find(c => c.key === event.category);
 
   const handleRSVP = async (status: 'going' | 'maybe' | 'not-going') => {

@@ -6,6 +6,13 @@
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { useMobileHUD } from '@/lib/mobile-hud-context';
+import { 
+  MobileOptimizedWrapper, 
+  MobileButton, 
+  MobileInput 
+} from '@/components/mobile/MobileOptimizedComponents';
+import { useHaptic, usePullToRefresh } from '@/lib/mobile-optimization-hooks';
+import { HapticPattern } from '@/lib/mobile-optimization';
 
 interface AuctionListing {
   id: string;
@@ -67,7 +74,8 @@ export function AuctionHouse() {
   );
 
   return (
-    <div className="space-y-4">
+    <MobileOptimizedWrapper title="Auction House" showHeader={true}>
+      <div className="space-y-4">
       {/* Header Tabs */}
       <div className="flex items-center justify-between">
         <div className="flex gap-2">
@@ -170,6 +178,7 @@ export function AuctionHouse() {
 function AuctionListingCard({ listing, onUpdate }: { listing: AuctionListing; onUpdate: () => void }) {
   const [showBidModal, setShowBidModal] = useState(false);
   const { pushNotification, preferences } = useMobileHUD();
+  const haptic = useHaptic();
 
   const timeRemaining = getTimeRemaining(new Date(listing.endTime));
   const isEndingSoon = new Date(listing.endTime).getTime() - new Date().getTime() < 3600000; // < 1 hour
@@ -308,6 +317,7 @@ function PlaceBidModal({
   const [autoBidEnabled, setAutoBidEnabled] = useState(false);
   const [maxAutoBid, setMaxAutoBid] = useState(listing.currentBid + 10);
   const { pushNotification } = useMobileHUD();
+  const haptic = useHaptic();
 
   const handlePlaceBid = async () => {
     try {
