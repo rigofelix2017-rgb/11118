@@ -6,6 +6,13 @@
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { useMobileHUD } from '@/lib/mobile-hud-context';
+import { 
+  MobileOptimizedWrapper, 
+  MobileButton, 
+  MobileInput 
+} from '@/components/mobile/MobileOptimizedComponents';
+import { useHaptic, usePullToRefresh } from '@/lib/mobile-optimization-hooks';
+import { HapticPattern } from '@/lib/mobile-optimization';
 
 interface Achievement {
   id: string;
@@ -36,6 +43,10 @@ export function AchievementSystem() {
   const [showOnlyLocked, setShowOnlyLocked] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const { pushNotification, preferences } = useMobileHUD();
+  const haptic = useHaptic();
+
+  // Pull-to-refresh
+  const { ref: pullRef, isRefreshing } = usePullToRefresh(fetchAchievements);
 
   useEffect(() => {
     fetchAchievements();
@@ -72,6 +83,8 @@ export function AchievementSystem() {
           icon: achievement.icon,
           duration: 5000,
         });
+
+        haptic(HapticPattern.SUCCESS);
 
         if (preferences.hapticEnabled && navigator.vibrate) {
           navigator.vibrate([50, 30, 50, 30, 100]);
@@ -128,8 +141,7 @@ export function AchievementSystem() {
     );
   }
 
-  return (
-    <div className="space-y-4">
+  return (`n    <MobileOptimizedWrapper `n      title="Achievements"`n      showHeader={true}`n      adjustForKeyboard={false}`n    >`n      <div ref={pullRef as any} className="space-y-4">
       {/* Stats Overview */}
       <div className="grid grid-cols-4 gap-2">
         <div className="text-center p-3 bg-muted rounded-lg">
@@ -152,13 +164,7 @@ export function AchievementSystem() {
 
       {/* Search & Filter */}
       <div className="space-y-2">
-        <input
-          type="text"
-          placeholder="Search achievements..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full px-4 py-2 rounded-lg bg-muted border border-border focus:border-primary outline-none"
-        />
+        <MobileInput`n            type="text"`n            placeholder="Search achievements..."`n            value={searchQuery}`n            onChange={(e) => setSearchQuery(e.target.value)}`n          />
         
         <label className="flex items-center gap-2 text-sm">
           <input
@@ -174,9 +180,12 @@ export function AchievementSystem() {
       {/* Category Tabs */}
       <div className="flex gap-2 overflow-x-auto pb-2">
         {categories.map((category) => (
-          <button
-            key={category.id}
-            onClick={() => setActiveCategory(category.id)}
+          <MobileButton
+              key={category.id}
+              onClick={() => {
+                haptic(HapticPattern.LIGHT);
+                setActiveCategory(category.id);
+              }}
             className={cn(
               "flex items-center gap-2 px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-all",
               activeCategory === category.id
@@ -186,7 +195,7 @@ export function AchievementSystem() {
           >
             <span className="text-lg">{category.icon}</span>
             <span>{category.name}</span>
-          </button>
+          </MobileButton>
         ))}
       </div>
 
